@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigasi Sejarah: Revolusi Prancis</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: '#f4ebd0',
+                        paper: '#fffdf5',
+                        ink: '#1c1917',
+                        crimson: '#8c2d19',
+                        navy: '#1a2a3a',
+                        gold: '#d4af37',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f4ebd0;
+            color: #1c1917;
+        }
+        h1, h2, h3, .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full bg-parchment text-ink flex flex-col justify-between m-0 p-0 overflow-x-hidden">
+
+    <!-- HEADER PERMAINAN -->
+    <header class="w-full bg-navy text-white px-6 py-4 shadow-md border-b-4 border-gold flex flex-wrap justify-between items-center z-10">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-scroll text-gold text-2xl"></i>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-wide text-gold">REVOLUSI PRANCIS</h1>
+                <p class="text-xs text-slate-300">(Game Investigasi Sejarah) - Fase F / Kelas XI</p>
+            </div>
+        </div>
+        
+        <!-- Status Bar Kanan (Hanya Muncul Saat Gameplay Siswa) -->
+        <div id="game-stats" class="hidden flex items-center space-x-4 mt-2 sm:mt-0 bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700">
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block">Pemain</span>
+                <span id="player-display" class="font-bold text-amber-200 text-sm">-</span>
+            </div>
+            <div class="border-l border-slate-600 h-6"></div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block">Sisa Waktu</span>
+                <span id="timer-display" class="font-mono font-bold text-amber-400 text-sm">15:00</span>
+            </div>
+            <div class="border-l border-slate-600 h-6"></div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block">Skor Saya</span>
+                <span id="score-display" class="font-bold text-emerald-400 text-sm">0 / 100</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <main class="flex-grow w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col justify-center items-center">
+
+        <!-- SCREEN 1: PORTAL INPUT SISWA (BERSIH) -->
+        <div id="login-screen" class="w-full max-w-md bg-paper p-6 md:p-8 rounded-2xl shadow-xl border-2 border-amber-200/60 fade-in">
+            <div class="text-center mb-6">
+                <span class="inline-block bg-amber-100 text-crimson font-bold text-xs px-3 py-1 rounded-full mb-2 uppercase tracking-wider">
+                    Game Edukasi Sejarah
+                </span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-navy">Masuk Ruang Investigasi</h2>
+                <p class="text-stone-600 text-xs mt-1">
+                    Isi nama dan kode ruang dari guru Anda untuk bergabung.
+                </p>
+            </div>
+
+            <div class="bg-amber-50/60 p-5 rounded-xl border border-amber-200 shadow-sm space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase mb-1">
+                        <i class="fa-solid fa-user mr-1 text-crimson"></i> Nama Lengkap Siswa
+                    </label>
+                    <input type="text" id="input-student-name" placeholder="Masukkan Nama Lengkap..." class="w-full px-4 py-3 rounded-lg border border-amber-300 focus:outline-none focus:ring-2 focus:ring-crimson bg-white text-stone-800 font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase mb-1">
+                        <i class="fa-solid fa-key mr-1 text-crimson"></i> Kode Ruang
+                    </label>
+                    <input type="text" id="input-room-code" placeholder="Contoh: OPQ123" class="w-full px-4 py-3 rounded-lg border border-amber-300 focus:outline-none focus:ring-2 focus:ring-crimson bg-white uppercase font-bold text-stone-800 tracking-wider">
+                </div>
+
+                <button id="btn-submit-join" onclick="handleStudentJoin()" class="w-full bg-crimson hover:bg-red-800 text-white font-bold py-3.5 px-6 rounded-lg shadow-md transition duration-200 flex items-center justify-center space-x-2 text-base cursor-pointer">
+                    <span>Masuk Ruang Tunggu</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Akses Tersembunyi Khusus Guru -->
+            <div class="text-center mt-4">
+                <button id="btn-secret-teacher" onclick="handleSecretTeacherAccess()" class="text-[11px] text-stone-400 hover:text-navy transition underline cursor-pointer">
+                    Akses Pemilik Link (Guru)
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: RUANG TUNGGU SISWA (WAITING LOBBY) -->
+        <div id="waiting-screen" class="hidden w-full max-w-md bg-paper p-8 rounded-2xl shadow-xl border-2 border-amber-200/60 text-center fade-in">
+            <div class="w-16 h-16 bg-amber-100 text-crimson rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-amber-300">
+                <i class="fa-solid fa-hourglass-half text-2xl animate-spin"></i>
+            </div>
+            <h3 class="text-xl font-bold text-navy mb-1">Ruang Tunggu Peserta</h3>
+            <p class="text-stone-600 text-xs mb-5">
+                Halo, <strong id="waiting-student-name" class="text-crimson"></strong>. Tekan tombol <strong>READY</strong> di bawah ini agar guru dapat melihat status siap Anda.
+            </p>
+
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 mb-5 text-left text-xs">
+                <div class="flex justify-between py-1 border-b border-amber-100">
+                    <span class="text-stone-600">Kode Ruang:</span>
+                    <span id="waiting-room-code" class="font-bold text-navy uppercase"></span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-amber-100">
+                    <span class="text-stone-600">Jumlah Misi:</span>
+                    <span class="font-bold text-navy">20 Misi Investigasi</span>
+                </div>
+                <div class="flex justify-between py-1">
+                    <span class="text-stone-600">Durasi Waktu:</span>
+                    <span class="font-bold text-navy">15 Menit</span>
+                </div>
+            </div>
+
+            <button id="btn-ready-toggle" onclick="handleToggleReady()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-lg shadow-md transition duration-200 flex items-center justify-center space-x-2 text-sm mb-2 cursor-pointer">
+                <i class="fa-solid fa-check"></i>
+                <span id="ready-text">TEKAN READY (SIAP)</span>
+            </button>
+            
+            <div id="ready-status-info" class="text-xs text-stone-500 font-semibold mb-3">
+                Status Anda: Belum Ready
+            </div>
+            <p class="text-[11px] text-amber-800 italic">
+                *Permainan akan otomatis dimulai begitu Guru menekan tombol Mulai di dashboard pemantauan.
+            </p>
+        </div>
+
+        <!-- SCREEN 3: DASHBOARD MONITORING CCTV LIVE (KHUSUS GURU) -->
+        <div id="teacher-dashboard-screen" class="hidden w-full bg-paper p-6 md:p-8 rounded-2xl shadow-xl border-2 border-amber-200/60 fade-in">
+            <div class="flex flex-wrap justify-between items-center mb-6 pb-4 border-b border-amber-200">
+                <div>
+                    <span class="bg-amber-100 text-crimson font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        <i class="fa-solid fa-video mr-1 text-emerald-600"></i> Dashboard CCTV Guru
+                    </span>
+                    <h2 class="text-2xl font-extrabold text-navy mt-1">Pemantauan Live Ruang: <span id="dash-room-code" class="text-crimson uppercase"></span></h2>
+                </div>
+                <div class="mt-2 sm:mt-0 flex space-x-3">
+                    <button id="btn-host-start-game" onclick="handleHostStartGame()" disabled class="bg-slate-500 cursor-not-allowed text-white font-bold py-2.5 px-5 rounded-lg shadow transition flex items-center space-x-2 text-xs md:text-sm">
+                        <i class="fa-solid fa-play"></i>
+                        <span>MULAI PERTANDINGAN</span>
+                    </button>
+                    <button onclick="location.reload()" class="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2.5 px-3 rounded-lg text-xs cursor-pointer">
+                        Keluar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel Ringkasan CCTV -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <span class="text-xs text-stone-500 uppercase font-bold block">Total Siswa Terhubung</span>
+                    <span id="cctv-total-students" class="text-2xl font-extrabold text-navy">0</span>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                    <span class="text-xs text-emerald-700 uppercase font-bold block">Status Ready</span>
+                    <span id="cctv-ready-students" class="text-2xl font-extrabold text-emerald-700">0 / 0</span>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                    <span class="text-xs text-blue-700 uppercase font-bold block">Status Sesi Game</span>
+                    <span id="cctv-game-status" class="text-sm font-bold text-blue-800">Menunggu Siswa Ready</span>
+                </div>
+            </div>
+
+            <!-- Tabel Live Feed CCTV -->
+            <h3 class="text-sm font-bold text-navy mb-3 flex items-center">
+                <i class="fa-solid fa-tower-broadcast text-red-600 mr-2 animate-pulse"></i> Live Progress & Poin Siswa:
+            </h3>
+            <div class="overflow-x-auto bg-white rounded-xl border border-amber-200 shadow-sm">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-navy text-white text-xs uppercase">
+                            <th class="py-3 px-4">Nama Siswa</th>
+                            <th class="py-3 px-4 text-center">Status Ready</th>
+                            <th class="py-3 px-4 text-center">Misi Aktif</th>
+                            <th class="py-3 px-4">Aktivitas Terakhir</th>
+                            <th class="py-3 px-4 text-center">Total Skor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cctv-table-body">
+                        <tr>
+                            <td colspan="5" class="py-6 text-center text-stone-400 italic text-xs">
+                                Belum ada siswa yang masuk ke ruang ini.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: GAMEPLAY SISWA -->
+        <div id="game-screen" class="hidden w-full bg-paper p-6 md:p-8 rounded-2xl shadow-xl border-2 border-amber-200/60 fade-in">
+            <div class="flex flex-wrap justify-between items-center mb-4 pb-3 border-b border-amber-200">
+                <div>
+                    <span id="case-stage" class="text-xs font-bold text-crimson uppercase tracking-wider block">Misi 1 dari 20</span>
+                    <h3 id="case-title" class="text-xl md:text-2xl font-bold text-navy">Judul Misi</h3>
+                </div>
+                <span class="bg-amber-100 text-amber-900 font-bold text-xs px-3 py-1 rounded-full border border-amber-300 mt-2 sm:mt-0">
+                    Nilai: 5 Poin
+                </span>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                <div class="md:col-span-1 bg-stone-100 rounded-xl overflow-hidden border border-stone-200 flex items-center justify-center min-h-[180px]">
+                    <img id="case-image" src="" alt="Gambar Sejarah" class="w-full h-48 md:h-full object-cover">
+                </div>
+                <div class="md:col-span-2 flex flex-col justify-center bg-amber-50/40 p-5 rounded-xl border border-amber-100">
+                    <p id="case-desc" class="text-stone-700 leading-relaxed text-sm md:text-base">
+                        Deskripsi sumber sejarah...
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-navy text-white p-4 md:p-5 rounded-xl mb-6 shadow-sm">
+                <p id="question-text" class="font-semibold text-base md:text-lg text-amber-100">
+                    Pertanyaan investigasi...
+                </p>
+            </div>
+
+            <div id="options-container" class="grid gap-3 mb-6"></div>
+            <div id="feedback-box" class="hidden p-4 rounded-xl border mb-6 text-sm font-medium"></div>
+
+            <div class="flex justify-end">
+                <button id="btn-next-mission" onclick="handleNextMission()" class="hidden bg-crimson hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 flex items-center space-x-2 cursor-pointer">
+                    <span>Misi Selanjutnya</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: HASIL AKHIR SISWA -->
+        <div id="end-screen" class="hidden w-full max-w-md bg-paper p-6 md:p-8 rounded-2xl shadow-xl border-2 border-amber-200/60 text-center fade-in">
+            <i class="fa-solid fa-trophy text-amber-500 text-5xl mb-3"></i>
+            <h2 class="text-2xl font-extrabold text-navy mb-1">Investigasi Selesai!</h2>
+            <p class="text-stone-600 text-xs mb-5">Seluruh misi telah diselesaikan.</p>
+
+            <div class="bg-amber-50 p-5 rounded-xl border border-amber-300 mb-6">
+                <span class="text-xs text-stone-500 uppercase block mb-1">Nama Peserta</span>
+                <span id="final-player-name" class="font-bold text-navy text-base block mb-3">-</span>
+                <span class="text-xs text-stone-500 uppercase block mb-1">Skor Akhir Anda</span>
+                <span id="final-score-val" class="font-extrabold text-emerald-600 text-3xl block">0 / 100</span>
+            </div>
+
+            <button onclick="location.reload()" class="bg-navy hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-200 text-sm cursor-pointer">
+                Keluar / Selesai
+            </button>
+        </div>
+
+    </main>
+
+    <!-- FOOTER KOSONG BERSIH -->
+    <footer class="w-full bg-navy text-slate-400 text-xs text-center py-3 border-t border-slate-700">
+        &nbsp;
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC REAL-TIME LOKAL -->
+    <script>
+        // DATA 20 SOAL INVESTIGASI SEJARAH REVOLUSI PRANCIS
+        const questions = [
+            {
+                title: "Misi 1: Ketimpangan 3 Golongan Masyarakat",
+                desc: "Di Prancis abad ke-18, masyarakat dibagi menjadi 3 Estates. Golongan 1 (Gereja) & Golongan 2 (Bangsawan) memiliki tanah luas dan bebas pajak, sedangkan Golongan 3 (Rakyat & Borjuis) menanggung seluruh beban pajak.",
+                img: "https://images.unsplash.com/photo-1543731068-7e0f5beff43a?auto=format&fit=crop&w=600&q=80",
+                question: "Apa penyebab utama kemarahan Golongan Ke-3 terhadap sistem Ancien Régime?",
+                options: [
+                    "Sistem perpajakan tidak adil dan tidak memiliki hak politik yang seimbang.",
+                    "Keinginan untuk menghapus seluruh agama dari negara Prancis.",
+                    "Penyitaan properti milik borjuis secara sepihak oleh tentara Inggris.",
+                    "Penolakan rakyat terhadap perkembangan ilmu pengetahuan Pencerahan."
+                ],
+                correct: 0,
+                explain: "Tepat! Golongan 3 menanggung pajak paling berat tanpa memiliki hak suara yang setara."
+            },
+            {
+                title: "Misi 2: Pengaruh Pemikiran Abad Pencerahan",
+                desc: "Filsuf seperti Montesquieu (Trias Politica), Rousseau (Kedaulatan Rakyat), dan Voltaire menyebarkan gagasan kebebasan dan rasionalitas di salon-salon Prancis.",
+                img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80",
+                question: "Bagaimana pemikiran Montesquieu memengaruhi ide perubahan sistem pemerintahan?",
+                options: [
+                    "Mendorong pembentukan kekuasaan absolut tanpa batas bagi raja.",
+                    "Mengusulkan pemisahan kekuasaan eksekutif, legislatif, dan yudikatif.",
+                    "Menyarankan pembubaran total parlemen dan pengadilan.",
+                    "Mewajibkan raja memimpin institusi keagamaan nasional."
+                ],
+                correct: 1,
+                explain: "Benar! Trias Politica Montesquieu menginspirasi perlunya pembatasan kekuasaan absolut."
+            },
+            {
+                title: "Misi 3: Krisis Keuangan & Beban Utang Kerajaan",
+                desc: "Kerajaan Prancis berada di ambang kebangkrutan akibat gaya hidup mewah istana Versailles dan keterlibatan dalam Perang Kemerdekaan Amerika.",
+                img: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&q=80",
+                question: "Mengapa bantuan Prancis pada Perang Kemerdekaan Amerika justru mempercepat krisis?",
+                options: [
+                    "Rakyat Prancis menolak aliansi dengan masyarakat Amerika.",
+                    "Kas negara terkuras habis hingga memicu krisis utang dan kelaparan.",
+                    "Tentara Amerika menyerang kembali wilayah pelabuhan Prancis.",
+                    "Inggris langsung menduduki seluruh wilayah ibu kota Paris."
+                ],
+                correct: 1,
+                explain: "Sangat tepat! Dukungan finansial ke Amerika menguras kas Prancis dan memperparah krisis."
+            },
+            {
+                title: "Misi 4: Sidang Estates-Generales (Mei 1789)",
+                desc: "Raja Louis XVI memanggil Estates-Generales. Namun, sistem pemungutan suara dilakukan per-golongan (1 golongan = 1 suara), bukan per-kepala.",
+                img: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=600&q=80",
+                question: "Mengapa perwakilan Golongan Ke-3 menolak sistem voting per-golongan?",
+                options: [
+                    "Karena Golongan 1 dan 2 akan selalu bekerja sama untuk mengalahkan Golongan 3 (2 vs 1).",
+                    "Karena Golongan 3 ingin menaikkan pajak untuk diri mereka sendiri.",
+                    "Karena Raja Louis XVI menolak hadir di dalam ruang sidang.",
+                    "Karena sidang diadakan di kota yang terlalu jauh dari Paris."
+                ],
+                correct: 0,
+                explain: "Benar! Sistem per-golongan membuat Golongan 3 selalu kalah dari aliansi Golongan 1 & 2."
+            },
+            {
+                title: "Misi 5: Sumpah Lapangan Tenis (1789)",
+                desc: "Diabaikan di Estates-Generales, Golongan 3 menyatakan diri sebagai Majelis Nasional dan bersumpah di lapangan tenis indoor untuk menyusun UUD.",
+                img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
+                question: "Apa arti penting dari peristiwa Sumpah Lapangan Tenis?",
+                options: [
+                    "Awal klaim bahwa kedaulatan negara berada di tangan rakyat, bukan keputusan raja.",
+                    "Pengumuman pembentukan tentara bayaran untuk menyerang Inggris.",
+                    "Kesepakatan untuk mengangkat Louis XVI sebagai kaisar seumur hidup.",
+                    "Pembubaran seluruh organisasi buruh dan petani di Paris."
+                ],
+                correct: 0,
+                explain: "Tepat! Majelis Nasional mengklaim kedaulatan rakyat dan bertekad membuat konstitusi."
+            },
+            {
+                title: "Misi 6: Penyerangan Penjara Bastille",
+                desc: "Massa rakyat Paris menyerbu Penjara Bastille. Peristiwa ini menjadi simbol perlawanan rakyat terhadap absolutisme.",
+                img: "https://images.unsplash.com/photo-1569012871812-f38ee64cd54c?auto=format&fit=crop&w=600&q=80",
+                question: "Mengapa Penjara Bastille menjadi sasaran utama amukan massa?",
+                options: [
+                    "Bastille adalah simbol kekuasaan sewenang-wenang raja dan tempat menyimpan mesiu.",
+                    "Bastille merupakan tempat penyimpanan seluruh emas kerajaan.",
+                    "Rakyat ingin menyelamatkan Raja Louis XVI yang disandera di sana.",
+                    "Bastille adalah markas utama pasukan pendudukan Inggris."
+                ],
+                correct: 0,
+                explain: "Luar biasa! Bastille dipandang sebagai pilar kekejaman absolutisme dan sumber senjata."
+            },
+            {
+                title: "Misi 7: Deklarasi Hak Asasi Manusia",
+                desc: "Majelis Nasional mengesahkan dokumen Declaration of the Rights of Man dengan semboyan: Liberté, Égalité, Fraternité.",
+                img: "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=600&q=80",
+                question: "Prinsip utama apa yang ditegaskan dalam dokumen tersebut?",
+                options: [
+                    "Semua manusia dilahirkan bebas dan memiliki hak yang sama di mata hukum.",
+                    "Hanya kaum bangsawan yang berhak mendapatkan perlindungan hukum.",
+                    "Gereja memiliki wewenang tertinggi menentukan undang-undang.",
+                    "Raja memiliki hak istimewa yang diberikan langsung oleh Tuhan."
+                ],
+                correct: 0,
+                explain: "Tepat! Dokumen ini meletakkan dasar HAM modern bahwa warga negara setara."
+            },
+            {
+                title: "Misi 8: Pawai Perempuan ke Versailles",
+                desc: "Ribuan perempuan Paris berjalan kaki ke Istana Versailles menuntut roti dan memaksa Raja pindah ke Paris.",
+                img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+                question: "Apa dampak dari keberhasilan Pawai Perempuan ke Versailles?",
+                options: [
+                    "Raja dan keluarga kerajaan dipaksa pindah ke Istana Tuileries di Paris di bawah pengawasan rakyat.",
+                    "Raja berhasil melarikan diri langsung ke negara Austria.",
+                    "Pemerintah kerajaan menghapus seluruh sistem perdagangan roti.",
+                    "Inggris menyatakan perang terbuka kepada rakyat Paris."
+                ],
+                correct: 0,
+                explain: "Benar! Kepindahan Raja ke Paris membuat kekuasaannya diawasi langsung oleh massa."
+            },
+            {
+                title: "Misi 9: Konstitusi Sipil Rohaniwan",
+                desc: "Pemerintah menasionalisasi tanah milik Gereja Katolik dan mewajibkan rohaniwan bersumpah setia pada negara.",
+                img: "https://images.unsplash.com/photo-1548625361-195fe5772323?auto=format&fit=crop&w=600&q=80",
+                question: "Mengapa kebijakan ini menimbulkan perpecahan di masyarakat?",
+                options: [
+                    "Banyak petani religius di pedesaan merasa revolusi menyerang keyakinan agama mereka.",
+                    "Gereja Katolik menuntut agar Prancis menjadi negara kekaisaran.",
+                    "Seluruh rohaniwan secara sukarela memimpin tentara revolusi.",
+                    "Rakyat kota Paris menolak pengambilalihan tanah gereja."
+                ],
+                correct: 0,
+                explain: "Tepat! Kebijakan ini memicu pemberontakan kontra-revolusi di daerah pedesaan."
+            },
+            {
+                title: "Misi 10: Pelarian ke Varennes",
+                desc: "Raja Louis XVI dan Ratu Marie Antoinette menyamar untuk melارikan diri ke luar negeri, namun tertangkap di Varennes.",
+                img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+                question: "Bagaimana dampak penangkapan Raja di Varennes terhadap pandangan rakyat?",
+                options: [
+                    "Raja dianggap sebagai pengkhianat bangsa yang bersekutu dengan musuh asing.",
+                    "Rakyat makin mencintai raja dan memaafkan seluruh kesalahannya.",
+                    "Majelis Nasional langsung membubarkan tentara rakyat.",
+                    "Kerajaan Austria membatalkan seluruh niat perang."
+                ],
+                correct: 0,
+                explain: "Sangat tepat! Pelarian ini menghancurkan sisa kepercayaan rakyat terhadap monarki."
+            },
+            {
+                title: "Misi 11: Perang Kontra-Revolusi Asing",
+                desc: "Austria dan Prusia mengancam menghancurkan Paris jika keselamatan Raja terancam.",
+                img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80",
+                question: "Bagaimana reaksi pemerintah revolusioner Prancis?",
+                options: [
+                    "Prancis menyatakan perang terlebih dahulu dan membentuk pasukan sukarelawan massal.",
+                    "Prancis menyerahkan diri dan mengembalikan kekuasaan absolut raja.",
+                    "Prancis meminta perlindungan militer kepada Kekaisaran Utsmaniyah.",
+                    "Prancis menjual seluruh wilayah selatan kepada Spanyol."
+                ],
+                correct: 0,
+                explain: "Benar! Prancis merespons dengan nasionalisme dan perang total."
+            },
+            {
+                title: "Misi 12: Republik Prancis Pertama",
+                desc: "Konvensi Nasional resmi menghapuskan monarki dan memproklamasikan Republik Pertama.",
+                img: "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=600&q=80",
+                question: "Perubahan mendasar apa yang terjadi dalam sistem republik?",
+                options: [
+                    "Kepala negara tidak lagi diwariskan tetapi dipilih melalui kedaulatan rakyat.",
+                    "Jabatan raja diubah menjadi menteri pertahanan seumur hidup.",
+                    "Sistem perbudakan diberlakukan kembali di seluruh wilayah Paris.",
+                    "Sistem perpajakan dikembalikan seperti masa Ancien Régime."
+                ],
+                correct: 0,
+                explain: "Tepat! Republik menandai dimulainya pemerintahan oleh perwakilan rakyat."
+            },
+            {
+                title: "Misi 13: Eksekusi Raja Louis XVI",
+                desc: "Louis XVI diadili atas tuduhan pengkhianatan dan dihukum mati dengan guillotine.",
+                img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=600&q=80",
+                question: "Apa dampak politik eksekusi raja di kancah internasional?",
+                options: [
+                    "Memicu terbentuknya Koalisi Pertama negara Eropa untuk memusnahkan Republik Prancis.",
+                    "Membuat seluruh kerajaan di Eropa mengakui kedaulatan Republik Prancis.",
+                    "Mengakhiri perang dan menciptakan perdamaian abadi di Eropa.",
+                    "Mendorong Kerajaan Inggris berubah menjadi negara republik."
+                ],
+                correct: 0,
+                explain: "Sangat tepat! Eksekusi raja memicu perang koalisi besar monarki Eropa."
+            },
+            {
+                title: "Misi 14: Komite Keselamatan Publik",
+                desc: "Dibentuk Komite Keselamatan Publik di bawah kepemimpinan Robespierre untuk menghadapi ancaman darurat.",
+                img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
+                question: "Tujuan utama dibentuknya lembaga darurat ini adalah...",
+                options: [
+                    "Mempertahankan Republik dari ancaman musuh dalam dan luar negeri.",
+                    "Menyusun kurikulum pendidikan sejarah sekolah dasar.",
+                    "Panitia pelaksana pemilihan kaisar baru Prancis.",
+                    "Kementerian perdagangan luar negeri dan diplomasi."
+                ],
+                correct: 0,
+                explain: "Benar! Komite ini diberi wewenang darurat untuk menyelamatkan revolusi."
+            },
+            {
+                title: "Misi 15: Era Masa Teror (Reign of Terror)",
+                desc: "Di bawah faksi Jacobin, ribuan orang yang dicurigai kontra-revolusioner dieksekusi.",
+                img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+                question: "Mengapa Masa Teror dipandang sebagai kontradiksi terhadap awal revolusi?",
+                options: [
+                    "Penindasan dan tindakan sewenang-wenang melanggar prinsip Hak Asasi Manusia.",
+                    "Karena Robespierre mengembalikan kekuasaan absolut kepada keluarga kerajaan.",
+                    "Karena pemerintah menghapus mata uang resmi Prancis.",
+                    "Karena Prancis menyerahkan seluruh wilayah koloninya kepada Inggris."
+                ],
+                correct: 0,
+                explain: "Tepat! Radikalisme ekstrem Masa Teror mencederai nilai kebebasan dan HAM."
+            },
+            {
+                title: "Misi 16: Reaksi Thermidor",
+                desc: "Robespierre ditangkap dan dieksekusi pada Juli 1794, mengakhiri Masa Teror.",
+                img: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=600&q=80",
+                question: "Apa akibat langsung dari jatuhnya Robespierre?",
+                options: [
+                    "Berakhirnya Masa Teror dan dibentuknya pemerintahan Direktori yang moderat.",
+                    "Pengangkatan kembali keturunan Louis XVI sebagai raja absolut.",
+                    "Pembubaran total negara Prancis menjadi wilayah-wilayah kecil.",
+                    "Masuknya tentara Prusia memimpin kota Paris."
+                ],
+                correct: 0,
+                explain: "Benar! Reaksi Thermidor mengalihkan kekuasaan ke kelompok borjuis moderat."
+            },
+            {
+                title: "Misi 17: Pemerintahan Direktori",
+                desc: "Direktori memegang kekuasaan eksekutif namun dilanda korupsi dan krisis.",
+                img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80",
+                question: "Kelemahan Direktori membuka jalan bagi munculnya tokoh militer:",
+                options: [
+                    "Napoleon Bonaparte",
+                    "Duke of Wellington",
+                    "Kaisar Alexander I",
+                    "Otto von Bismarck"
+                ],
+                correct: 0,
+                explain: "Tepat! Ketidakstabilan Direktori mendatangkan figur tegas Napoleon."
+            },
+            {
+                title: "Misi 18: Kudeta 18 Brumaire",
+                desc: "Napoleon melakukan kudeta pada November 1799 dan membubarkan Direktori.",
+                img: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&q=80",
+                question: "Peristiwa ini menandai...",
+                options: [
+                    "Titik akhir resmi dari rangkaian periode Revolusi Prancis.",
+                    "Awal dari perang saudara antara petani dan bangsawan.",
+                    "Kembalinya sistem feodalisme Ancien Régime.",
+                    "Penyatuan Prancis dan Inggris dalam satu kerajaan."
+                ],
+                correct: 0,
+                explain: "Benar! Kudeta Napoleon mengakhiri era revolusi dan memulai era Konsulat."
+            },
+            {
+                title: "Misi 19: Kode Napoleon",
+                desc: "Napoleon membakukan hukum sipil yang menjamin kesetaraan di mata hukum.",
+                img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
+                question: "Bagaimana Kode Napoleon mencerminkan warisan positif revolusi?",
+                options: [
+                    "Menjamin kesetaraan warga negara di mata hukum dan perlindungan hak milik.",
+                    "Mengembalikan hak istimewa bebas pajak bagi bangsawan.",
+                    "Menerapkan hukum yang berbeda bagi setiap golongan.",
+                    "Melarang perkembangan perdagangan modern."
+                ],
+                correct: 0,
+                explain: "Sangat tepat! Kode Napoleon menyebarkan prinsip kesetaraan hukum ke Eropa."
+            },
+            {
+                title: "Misi 20: Dampak Global Revolusi",
+                desc: "Revolusi Prancis mengubah dunia dengan menyebarkan demokrasi dan nasionalisme.",
+                img: "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=600&q=80",
+                question: "Apa pengaruh jangka panjang Revolusi Prancis?",
+                options: [
+                    "Runtuhnya feodalisme serta berkembangnya demokrasi dan HAM di dunia modern.",
+                    "Menguatnya kekuasaan absolut raja di seluruh dunia.",
+                    "Penghapusan seluruh sistem hukum tertulis di dunia.",
+                    "Terhentinya perkembangan teknologi dan ilmu pengetahuan."
+                ],
+                correct: 0,
+                explain: "Luar biasa! Revolusi Prancis menjadi fondasi dunia modern yang demokratis."
+            }
+        ];
+
+        // VARIABEL STATE APLIKASI
+        let studentName = "";
+        let roomCode = "";
+        let isReady = false;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timerInterval = null;
+        let timeLeft = 15 * 60; // 15 Menit
+
+        // --- 1. FUNGSI SISWA JOIN RUANG ---
+        function handleStudentJoin() {
+            const nameVal = document.getElementById('input-student-name').value.trim();
+            const roomVal = document.getElementById('input-room-code').value.trim().toUpperCase();
+
+            if (!nameVal) {
+                alert("Mohon masukkan Nama Lengkap Anda!");
+                return;
+            }
+            if (!roomVal) {
+                alert("Mohon masukkan Kode Ruang dari Guru!");
+                return;
+            }
+
+            studentName = nameVal;
+            roomCode = roomVal;
+
+            document.getElementById('waiting-student-name').innerText = studentName;
+            document.getElementById('waiting-room-code').innerText = roomCode;
+            document.getElementById('player-display').innerText = studentName;
+
+            // Simpan / Daftarkan siswa ke LocalStorage Room
+            registerStudentToRoom({
+                name: studentName,
+                ready: false,
+                stage: 1,
+                lastAction: 'Menunggu di Ruang Tunggu',
+                score: 0
+            });
+
+            // Pindah ke layar tunggu
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('waiting-screen').classList.remove('hidden');
+
+            // Mulai mendengarkan perintah dari Guru (Live Sync)
+            startStudentListener();
+        }
+
+        // --- 2. SISWA TOGGLE READY ---
+        function handleToggleReady() {
+            isReady = !isReady;
+            const btnReady = document.getElementById('btn-ready-toggle');
+            const readyText = document.getElementById('ready-text');
+            const statusInfo = document.getElementById('ready-status-info');
+
+            if (isReady) {
+                btnReady.className = "w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-6 rounded-lg shadow-md transition duration-200 flex items-center justify-center space-x-2 text-sm mb-2 cursor-pointer";
+                readyText.innerText = "BATAL READY";
+                statusInfo.innerText = "Status Anda: SIAP (READY)";
+                statusInfo.className = "text-xs text-emerald-600 font-bold mb-3";
+            } else {
+                btnReady.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-lg shadow-md transition duration-200 flex items-center justify-center space-x-2 text-sm mb-2";
+                readyText.innerText = "TEKAN READY (SIAP)";
+                statusInfo.innerText = "Status Anda: Belum Ready";
+                statusInfo.className = "text-xs text-stone-500 font-semibold mb-3";
+            }
+
+            updateStudentDataInRoom({
+                ready: isReady,
+                lastAction: isReady ? 'Sudah Ready ✅' : 'Batal Ready'
+            });
+        }
+
+        // --- 3. AKSES GURU (CCTV DASHBOARD) ---
+        function handleSecretTeacherAccess() {
+            const codeInput = prompt("Masukkan Kode Ruang yang ingin Anda pantau dan mulai (Contoh: OPQ123):", "OPQ123");
+            if (!codeInput) return;
+
+            roomCode = codeInput.trim().toUpperCase();
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('waiting-screen').classList.add('hidden');
+            document.getElementById('teacher-dashboard-screen').classList.remove('hidden');
+            document.getElementById('dash-room-code').innerText = roomCode;
+
+            // Inisialisasi status ruang guru
+            let roomState = JSON.parse(localStorage.getItem('room_state_' + roomCode) || '{"started": false}');
+            localStorage.setItem('room_state_' + roomCode, JSON.stringify(roomState));
+
+            startTeacherListener();
+        }
+
+        // --- 4. GURU MEMULAI PERTANDINGAN ---
+        function handleHostStartGame() {
+            let roomState = JSON.parse(localStorage.getItem('room_state_' + roomCode) || '{"started": false}');
+            roomState.started = true;
+            localStorage.setItem('room_state_' + roomCode, JSON.stringify(roomState));
+
+            alert("Pertandingan berhasil dimulai! Seluruh siswa otomatis masuk ke soal game.");
+        }
+
+        // --- 5. REAL-TIME SYNC LOCALSTORAGE & STORAGE EVENT ---
+        function registerStudentToRoom(studentObj) {
+            let students = JSON.parse(localStorage.getItem('room_students_' + roomCode) || '[]');
+            let existing = students.find(s => s.name === studentObj.name);
+            if (!existing) {
+                students.push(studentObj);
+            } else {
+                existing.ready = studentObj.ready;
+            }
+            localStorage.setItem('room_students_' + roomCode, JSON.stringify(students));
+        }
+
+        function updateStudentDataInRoom(updateData) {
+            let students = JSON.parse(localStorage.getItem('room_students_' + roomCode) || '[]');
+            let s = students.find(x => x.name === studentName);
+            if (s) {
+                Object.assign(s, updateData);
+                localStorage.setItem('room_students_' + roomCode, JSON.stringify(students));
+            }
+        }
+
+        // Sinkronisasi Siswa mendengarkan perintah Guru
+        function startStudentListener() {
+            setInterval(() => {
+                let roomState = JSON.parse(localStorage.getItem('room_state_' + roomCode) || '{"started": false}');
+                if (roomState.started) {
+                    // Jika guru menekan mulai dan game screen masih tersembunyi
+                    if (document.getElementById('game-screen').classList.contains('hidden')) {
+                        startStudentGamePlay();
+                    }
+                }
+            }, 500);
+        }
+
+        // Sinkronisasi Guru mendengarkan aktivitas Siswa (CCTV Live)
+        function startTeacherListener() {
+            setInterval(() => {
+                let students = JSON.parse(localStorage.getItem('room_students_' + roomCode) || '[]');
+                renderCCTVTable(students);
+            }, 500);
+        }
+
+        function renderCCTVTable(students) {
+            const tbody = document.getElementById('cctv-table-body');
+            tbody.innerHTML = '';
+
+            let total = students.length;
+            let readyCount = students.filter(s => s.ready).length;
+
+            document.getElementById('cctv-total-students').innerText = total;
+            document.getElementById('cctv-ready-students').innerText = `${readyCount} / ${total}`;
+
+            let roomState = JSON.parse(localStorage.getItem('room_state_' + roomCode) || '{"started": false}');
+            const btnStart = document.getElementById('btn-host-start-game');
+
+            if (roomState.started) {
+                document.getElementById('cctv-game-status').innerText = "Sedang Berlangsung 🔴";
+                btnStart.disabled = true;
+                btnStart.className = "bg-slate-500 cursor-not-allowed text-white font-bold py-2.5 px-5 rounded-lg shadow transition flex items-center space-x-2 text-xs md:text-sm";
+            } else if (total > 0 && readyCount === total) {
+                btnStart.disabled = false;
+                btnStart.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg shadow transition flex items-center space-x-2 text-xs md:text-sm cursor-pointer";
+                document.getElementById('cctv-game-status').innerText = "Semua Siswa Ready 🟢";
+            } else {
+                btnStart.disabled = true;
+                btnStart.className = "bg-slate-500 cursor-not-allowed text-white font-bold py-2.5 px-5 rounded-lg shadow transition flex items-center space-x-2 text-xs md:text-sm";
+                document.getElementById('cctv-game-status').innerText = "Menunggu Siswa Ready...";
+            }
+
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-stone-400 italic text-xs">Belum ada siswa yang masuk ke ruang ${roomCode}.</td></tr>`;
+                return;
+            }
+
+            students.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-amber-100 hover:bg-amber-50/50";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-navy text-xs">${s.name}</td>
+                    <td class="py-3 px-4 text-center">
+                        ${s.ready ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold">READY ✅</span>' : '<span class="bg-amber-100 text-amber-800 text-[10px] px-2.5 py-0.5 rounded-full">Belum</span>'}
+                    </td>
+                    <td class="py-3 px-4 text-center font-mono font-bold text-crimson text-xs">Misi ${s.stage} / 20</td>
+                    <td class="py-3 px-4 text-xs text-stone-700">${s.lastAction}</td>
+                    <td class="py-3 px-4 text-center font-extrabold text-emerald-600 text-xs">${s.score} Poin</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- 6. GAMEPLAY SISWA ---
+        function startStudentGamePlay() {
+            document.getElementById('waiting-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-stats').classList.remove('hidden');
+
+            startTimer();
+            loadQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                document.getElementById('timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishGame();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById('case-stage').innerText = `MISI ${currentQuestionIndex + 1} DARI 20`;
+            document.getElementById('case-title').innerText = q.title;
+            document.getElementById('case-desc').innerText = q.desc;
+            document.getElementById('case-image').src = q.img;
+            document.getElementById('question-text').innerText = q.question;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            document.getElementById('feedback-box').classList.add('hidden');
+            document.getElementById('btn-next-mission').classList.add('hidden');
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 font-medium text-stone-800 transition flex items-start space-x-3 shadow-sm cursor-pointer";
+                btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-stone-100 text-stone-600 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 border">${String.fromCharCode(65 + idx)}</span><span class="text-xs md:text-sm leading-relaxed">${optText}</span>`;
+                btn.onclick = () => selectAnswer(idx, q.correct, q.explain, optText);
+                container.appendChild(btn);
+            });
+
+            updateStudentDataInRoom({
+                stage: currentQuestionIndex + 1,
+                lastAction: `Mengerjakan Misi ${currentQuestionIndex + 1}`
+            });
+        }
+
+        function selectAnswer(selectedIdx, correctIdx, explain, optText) {
+            const buttons = document.querySelectorAll('#options-container button');
+            buttons.forEach(b => b.disabled = true);
+
+            const feedback = document.getElementById('feedback-box');
+            feedback.classList.remove('hidden');
+
+            let isCorrect = (selectedIdx === correctIdx);
+
+            if (isCorrect) {
+                score += 5;
+                document.getElementById('score-display').innerText = `${score} / 100`;
+                buttons[selectedIdx].className = "w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-medium text-emerald-900 flex items-start space-x-3 shadow-sm";
+                feedback.className = "p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-900 text-xs md:text-sm font-medium";
+                feedback.innerHTML = `<strong>Jawaban Tepat (+5 Poin)!</strong> ${explain}`;
+            } else {
+                buttons[selectedIdx].className = "w-full text-left p-4 rounded-xl border-2 border-red-400 bg-red-50 font-medium text-red-900 flex items-start space-x-3 shadow-sm";
+                buttons[correctIdx].className = "w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-medium text-emerald-900 flex items-start space-x-3 shadow-sm";
+                feedback.className = "p-4 rounded-xl border border-red-200 bg-red-50 text-red-900 text-xs md:text-sm font-medium";
+                feedback.innerHTML = `<strong>Jawaban Kurang Tepat.</strong> ${explain}`;
+            }
+
+            document.getElementById('btn-next-mission').classList.remove('hidden');
+
+            updateStudentDataInRoom({
+                score: score,
+                lastAction: isCorrect ? `Misi ${currentQuestionIndex+1}: Benar (+5)` : `Misi ${currentQuestionIndex+1}: Salah`
+            });
+        }
+
+        function handleNextMission() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('final-player-name').innerText = studentName;
+            document.getElementById('final-score-val').innerText = `${score} / 100`;
+
+            updateStudentDataInRoom({
+                lastAction: `Selesai (Skor: ${score})`
+            });
+        }
+    </script>
+</body>
+</html>
